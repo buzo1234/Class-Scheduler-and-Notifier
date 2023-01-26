@@ -201,7 +201,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   DateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS").parse(dateID);
               for (var cat in snapshot.data!.docs[i]['Entries']) {
                 var count = 0;
-               
+
                 for (var i = 0; i < cat['classList'].length; i++) {
                   if (cat['classList'][i]['status'] == 'rescheduled') {
                     count += 1;
@@ -210,7 +210,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   }
                 }
                 classData.add(ClassSchedule(
-                    name: cat['name'],
+                    name: cat['classList'][count]['name'],
                     date: dID,
                     end: cat['classList'][count]['end'],
                     start: cat['classList'][count]['start']));
@@ -241,6 +241,28 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     eventLoader: _getEventsForDay,
                     startingDayOfWeek: StartingDayOfWeek.monday,
                     calendarStyle: const CalendarStyle(
+                      rangeEndDecoration:
+                          BoxDecoration(shape: BoxShape.rectangle),
+                      rangeStartDecoration:
+                          BoxDecoration(shape: BoxShape.rectangle),
+                      withinRangeDecoration:
+                          BoxDecoration(shape: BoxShape.rectangle),
+                      holidayDecoration:
+                          BoxDecoration(shape: BoxShape.rectangle),
+                      weekendDecoration:
+                          BoxDecoration(shape: BoxShape.rectangle),
+                      outsideDecoration:
+                          BoxDecoration(shape: BoxShape.rectangle),
+                      defaultDecoration:
+                          BoxDecoration(shape: BoxShape.rectangle),
+                      todayDecoration: BoxDecoration(
+                          color: Colors.blue,
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.all(Radius.circular(7.0))),
+                      selectedDecoration: BoxDecoration(
+                          color: Color.fromARGB(255, 0, 90, 122),
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.all(Radius.circular(7.0))),
                       // Use `CalendarStyle` to customize the UI
                       outsideDaysVisible: false,
                     ),
@@ -269,11 +291,16 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.whiteColor,
-                          border: Border.all(),
+                          border: _selectedEvents?[index].name ==
+                                  widget.user.name
+                              ? Border.all(
+                                  color: const Color.fromARGB(179, 2, 99, 5),
+                                  width: 4.0)
+                              : Border.all(color: Colors.grey),
                           borderRadius: BorderRadius.circular(12.0),
                         ),
                         child: ListTile(
-                          onTap: () => {},
+                          onTap: () {},
                           title: Text(_selectedEvents?[index].name ?? ''),
                           subtitle: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,

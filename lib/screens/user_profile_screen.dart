@@ -6,6 +6,7 @@ import 'package:vocal/models/day_entry.dart';
 import 'package:vocal/models/user.dart';
 import 'package:vocal/screens/add_student.dart';
 import 'package:vocal/screens/create_schedule.dart';
+import 'package:vocal/screens/edit_class_schedule.dart';
 import 'package:vocal/screens/login_with_phone.dart';
 import 'package:vocal/services/firebase_crud.dart';
 import 'package:vocal/services/shared_refs.dart';
@@ -131,7 +132,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('user is : ${widget.user.phone}');
     return Scaffold(
       endDrawer: Drawer(
         // Add a ListView to the drawer. This ensures the user can scroll
@@ -260,9 +260,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               DateTime dID =
                   DateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS").parse(dateID);
               for (var cat in snapshot.data!.docs[i]['Entries']) {
-
                 var count = 0;
-               
+
                 for (var i = 0; i < cat['classList'].length; i++) {
                   if (cat['classList'][i]['status'] == 'rescheduled') {
                     count += 1;
@@ -271,7 +270,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   }
                 }
                 classData.add(ClassSchedule(
-                    name: cat['name'],
+                    name: cat['classList'][count]['name'],
+                    phone: cat['name'],
                     date: dID,
                     end: cat['classList'][count]['end'],
                     start: cat['classList'][count]['start']));
@@ -302,6 +302,28 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     eventLoader: _getEventsForDay,
                     startingDayOfWeek: StartingDayOfWeek.monday,
                     calendarStyle: const CalendarStyle(
+                      rangeEndDecoration:
+                          BoxDecoration(shape: BoxShape.rectangle),
+                      rangeStartDecoration:
+                          BoxDecoration(shape: BoxShape.rectangle),
+                      withinRangeDecoration:
+                          BoxDecoration(shape: BoxShape.rectangle),
+                      holidayDecoration:
+                          BoxDecoration(shape: BoxShape.rectangle),
+                      weekendDecoration:
+                          BoxDecoration(shape: BoxShape.rectangle),
+                      outsideDecoration:
+                          BoxDecoration(shape: BoxShape.rectangle),
+                      defaultDecoration:
+                          BoxDecoration(shape: BoxShape.rectangle),
+                      todayDecoration: BoxDecoration(
+                          color: Colors.blue,
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.all(Radius.circular(7.0))),
+                      selectedDecoration: BoxDecoration(
+                          color: Color.fromARGB(255, 0, 90, 122),
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.all(Radius.circular(7.0))),
                       // Use `CalendarStyle` to customize the UI
                       outsideDaysVisible: false,
                     ),
@@ -334,13 +356,30 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           borderRadius: BorderRadius.circular(12.0),
                         ),
                         child: ListTile(
-                          onTap: () => {},
-                          title: Text(_selectedEvents?[index].name ?? ''),
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => (EditSchedule(
+                                    userSchedule: _selectedEvents?[index],
+                                  )),
+                                ));
+                          },
+                          title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(_selectedEvents?[index].name ?? ''),
+                                Text(
+                                  "+91-${_selectedEvents?[index].phone}",
+                                  style: const TextStyle(fontSize: 13.0),
+                                )
+                              ]),
                           subtitle: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(TimeString(_selectedEvents?[index].start)),
-                                const Icon(Icons.arrow_circle_right_rounded),
+                                const Icon(Icons.arrow_right_alt_outlined),
                                 Text(TimeString(_selectedEvents?[index].end))
                               ]),
                         ),

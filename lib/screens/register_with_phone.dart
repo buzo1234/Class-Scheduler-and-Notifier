@@ -310,7 +310,7 @@ class _RegisterWithPhoneState extends State<RegisterWithPhone> {
 
     if (response.code == 200) {
       FocusScope.of(context).requestFocus(FocusNode());
-      Navigator.push(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (context) => VerificationScreen(
@@ -320,6 +320,7 @@ class _RegisterWithPhoneState extends State<RegisterWithPhone> {
             role: "student",
           ),
         ),
+        (route) => false,
       );
     } else {
       print(response.message);

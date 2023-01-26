@@ -131,7 +131,7 @@ class _AddEntriesState extends State<AddEntries> {
                           docSnap.data() as Map<String, dynamic>;
 
                       return DropdownMenuItem<String>(
-                        value: d['phone']+'%%'+d['name'],
+                        value: d['phone'] + '%%' + d['name'],
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -147,7 +147,7 @@ class _AddEntriesState extends State<AddEntries> {
                     onChanged: (String? newValue) {
                       List phoneAndName = newValue!.split('%%');
                       setState(() {
-                        defVal[index] = phoneAndName[0]!;
+                        defVal[index] = newValue;
                         itemList[index].name = phoneAndName[1];
                         itemList[index].id = phoneAndName[0];
                       });
