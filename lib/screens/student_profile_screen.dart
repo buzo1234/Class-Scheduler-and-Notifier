@@ -306,7 +306,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(TimeString(_selectedEvents?[index].start)),
-                                const Icon(Icons.arrow_circle_right_rounded),
+                                const Icon(Icons.arrow_right_alt_outlined),
                                 Text(TimeString(_selectedEvents?[index].end))
                               ]),
                         ),

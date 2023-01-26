@@ -309,22 +309,21 @@ class _RegisterWithPhoneState extends State<RegisterWithPhone> {
         name: nameEditingController.text, phone: textEditingController.text);
 
     if (response.code == 200) {
-      FocusScope.of(context).requestFocus(FocusNode());
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => VerificationScreen(
-            mobile: textEditingController.text,
-            countrycode: "+91",
-            userName: nameEditingController.text,
-            role: "student",
+      if (mounted) {
+        FocusScope.of(context).requestFocus(FocusNode());
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VerificationScreen(
+              mobile: textEditingController.text,
+              countrycode: "+91",
+              userName: nameEditingController.text,
+              role: "student",
+            ),
           ),
-        ),
-        (route) => false,
-      );
-    } else {
-      print(response.message);
-    }
+        );
+      }
+    } else {}
   }
 
   continueClick() async {
