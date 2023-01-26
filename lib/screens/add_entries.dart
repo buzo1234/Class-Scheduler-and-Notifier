@@ -131,23 +131,25 @@ class _AddEntriesState extends State<AddEntries> {
                           docSnap.data() as Map<String, dynamic>;
 
                       return DropdownMenuItem<String>(
-                        value: d['phone'],
+                        value: d['phone']+'%%'+d['name'],
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 d['name'],
-                                style: const TextStyle(fontSize: 20),
+                                style: const TextStyle(fontSize: 18),
                               ),
                               Text(d['phone'],
-                                  style: const TextStyle(fontSize: 15))
+                                  style: const TextStyle(fontSize: 14))
                             ]),
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
+                      List phoneAndName = newValue!.split('%%');
                       setState(() {
-                        defVal[index] = newValue!;
-                        itemList[index].name = newValue;
+                        defVal[index] = phoneAndName[0]!;
+                        itemList[index].name = phoneAndName[1];
+                        itemList[index].id = phoneAndName[0];
                       });
                     },
                   ),
@@ -258,11 +260,18 @@ class _AddEntriesState extends State<AddEntries> {
           IconButton(
               onPressed: () async {
                 List itemMap = [];
+                List classScheduleList = [];
+
                 for (var i = 0; i < itemList.length; i++) {
                   itemMap.add(itemList[i].toMap());
+                  ClassSchedule clasSchedule =
+                      ClassSchedule(itemList[i].id, itemMap);
+                  classScheduleList
+                      .add(clasSchedule.toMap()); //{phone, start, end}
+                  itemMap = [];
                 }
                 var response = await FirebaseCrud.addClasses(
-                    date: widget.date.toString(), entries: itemMap);
+                    date: widget.date.toString(), entries: classScheduleList);
 
                 if (response.code != 200) {
                   showDialog(
@@ -363,11 +372,31 @@ class Item {
   TimeOfDay start;
   TimeOfDay end;
   String? name;
-  String id;
+  String? id;
+  String status = 'scheduled';
 
   Item(this.start, this.end, this.name, this.id);
 
   Map<String, dynamic> toMap() {
-    return {"name": name, "start": start.toString(), "end": end.toString()};
+    return {
+      "name": name,
+      "start": start.toString(),
+      "end": end.toString(),
+      "status": status
+    };
+  }
+}
+
+class ClassSchedule {
+  String? phone;
+  List clasList = [];
+
+  ClassSchedule(this.phone, this.clasList);
+
+  Map<String, dynamic> toMap() {
+    return {
+      "name": phone,
+      "classList": clasList,
+    };
   }
 }

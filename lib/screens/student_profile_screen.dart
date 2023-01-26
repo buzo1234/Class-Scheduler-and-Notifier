@@ -183,20 +183,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         iconTheme: const IconThemeData(
           color: Colors.blue,
         ),
-        /* actions: [
-          IconButton(
-              onPressed: () {
-                sharedPref.remove("user");
-
-                Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => (const LoginWithPhone()),
-                    ),
-                    (route) => false);
-              },
-              icon: const Icon(Icons.logout)),
-        ], */
-        //automaticallyImplyLeading: true,
         backgroundColor: AppColors.whiteColor,
       ),
       body: StreamBuilder(
@@ -214,11 +200,20 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               DateTime dID =
                   DateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS").parse(dateID);
               for (var cat in snapshot.data!.docs[i]['Entries']) {
+                var count = 0;
+               
+                for (var i = 0; i < cat['classList'].length; i++) {
+                  if (cat['classList'][i]['status'] == 'rescheduled') {
+                    count += 1;
+                  } else {
+                    break;
+                  }
+                }
                 classData.add(ClassSchedule(
                     name: cat['name'],
                     date: dID,
-                    end: cat['end'],
-                    start: cat['start']));
+                    end: cat['classList'][count]['end'],
+                    start: cat['classList'][count]['start']));
               }
             }
 

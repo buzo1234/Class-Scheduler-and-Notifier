@@ -260,11 +260,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               DateTime dID =
                   DateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS").parse(dateID);
               for (var cat in snapshot.data!.docs[i]['Entries']) {
+
+                var count = 0;
+               
+                for (var i = 0; i < cat['classList'].length; i++) {
+                  if (cat['classList'][i]['status'] == 'rescheduled') {
+                    count += 1;
+                  } else {
+                    break;
+                  }
+                }
                 classData.add(ClassSchedule(
                     name: cat['name'],
                     date: dID,
-                    end: cat['end'],
-                    start: cat['start']));
+                    end: cat['classList'][count]['end'],
+                    start: cat['classList'][count]['start']));
               }
             }
 
