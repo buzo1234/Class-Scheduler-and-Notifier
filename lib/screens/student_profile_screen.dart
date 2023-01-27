@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:vocal/models/day_entry.dart';
 import 'package:vocal/models/user.dart';
+import 'package:vocal/models/user_shared_pref.dart';
 import 'package:vocal/screens/login_with_phone.dart';
 import 'package:vocal/services/firebase_crud.dart';
 import 'package:vocal/services/shared_refs.dart';
@@ -11,7 +12,7 @@ import 'package:vocal/utility/app_colors.dart';
 import 'package:vocal/utility/table_utils.dart';
 
 class StudentProfileScreen extends StatefulWidget {
-  UserInfoSave user;
+  UserLocalSave user;
 
   StudentProfileScreen({required this.user, super.key});
   @override
@@ -33,7 +34,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
   Map<DateTime, List<ClassSchedule>> _groupedEvents = {};
 
   SharedPref sharedPref = SharedPref();
-  UserInfoSave useDel = UserInfoSave();
+  UserLocalSave useDel = UserLocalSave();
 
   _groupEvents(List<ClassSchedule> events) {
     _groupedEvents = {};

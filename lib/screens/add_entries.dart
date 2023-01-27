@@ -397,6 +397,7 @@ class ClassSchedule {
     return {
       "name": phone,
       "classList": clasList,
+      
     };
   }
 }

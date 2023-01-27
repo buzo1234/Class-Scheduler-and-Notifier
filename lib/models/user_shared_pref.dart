@@ -1,24 +1,21 @@
-class UserInfoSave {
+class UserLocalSave {
   String? name;
   String? phone;
   String? role;
   bool? belong;
-  List<String?> tokens = [];
 
-  UserInfoSave();
+  UserLocalSave();
 
-  UserInfoSave.fromJson(Map<String, dynamic> json)
+  UserLocalSave.fromJson(Map<String, dynamic> json)
       : name = json['name'],
         phone = json['phone'],
         role = json['role'],
-        belong = json['belong'],
-        tokens = json['token'];
+        belong = json['belong'];
 
   Map<String, dynamic> toJson() => {
         'name': name,
         'phone': phone,
         'role': role,
         'belong': belong,
-        'token': tokens
       };
 }

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:vocal/screens/register_with_phone.dart';
 import 'package:vocal/screens/verification_screen.dart';
@@ -15,11 +16,13 @@ class LoginWithPhone extends StatefulWidget {
 }
 
 class _LoginWithPhoneState extends State<LoginWithPhone> {
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
   AppDimens appDimens;
   TextEditingController textEditingController;
   Size size;
   MediaQueryData mediaQuerydata;
   bool isLoading = false;
+  String? mtoken = " ";
 
   _LoginWithPhoneState()
       : size = const Size(20, 20),
@@ -27,9 +30,18 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
         mediaQuerydata = const MediaQueryData(),
         textEditingController = TextEditingController();
 
+  void getToken() async {
+    await messaging.getToken().then((token) {
+      setState(() {
+        mtoken = token;
+      });
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    getToken();
     textEditingController = TextEditingController();
   }
 
@@ -209,21 +221,40 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
     );
   }
 
-  moveToScreen(Object? role) {
+  moveToScreen(Object? role) async {
     var r = role as Map;
 
-    FocusScope.of(context).requestFocus(FocusNode());
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => VerificationScreen(
-          mobile: textEditingController.text,
-          countrycode: "+91",
-          userName: r['name'],
-          role: r['role'],
+    if (mtoken != r['token']) {
+      var response = await UserCrud.updateUserToken(
+          deviceToken: mtoken, phone: textEditingController.text);
+
+      if (response.code != 200) {
+        showDialog(
+            context: context,
+            builder: (context) {
+              return const AlertDialog(
+                content: Text('Some Error Occured'),
+              );
+            });
+
+        return;
+      }
+    }
+
+    if (mounted) {
+      FocusScope.of(context).requestFocus(FocusNode());
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => VerificationScreen(
+            mobile: textEditingController.text,
+            countrycode: "+91",
+            userName: r['name'],
+            role: r['role'],
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   continueClick() {

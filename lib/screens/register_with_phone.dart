@@ -41,35 +41,12 @@ class _RegisterWithPhoneState extends State<RegisterWithPhone> {
     });
   }
 
-  void requestPermission() async {
-    print('permission loop entered');
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
-    } else if (settings.authorizationStatus ==
-        AuthorizationStatus.provisional) {
-      print('User granted provisional permission');
-    } else {
-      print('User declined or has not accepted permission');
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     textEditingController = TextEditingController();
     nameEditingController = TextEditingController();
     getToken();
-    requestPermission();
   }
 
   @override
@@ -305,8 +282,12 @@ class _RegisterWithPhoneState extends State<RegisterWithPhone> {
   }
 
   addUserToDB() async {
+    List<String?> tokenList = [];
+    tokenList.add(mtoken);
     var response = await UserCrud.addUsers(
-        name: nameEditingController.text, phone: textEditingController.text);
+        name: nameEditingController.text,
+        phone: textEditingController.text,
+        deviceToken: tokenList);
 
     if (response.code == 200) {
       if (mounted) {

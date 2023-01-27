@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:vocal/models/day_entry.dart';
-import 'package:vocal/models/user.dart';
+import 'package:vocal/models/user_shared_pref.dart';
 import 'package:vocal/screens/add_student.dart';
 import 'package:vocal/screens/create_schedule.dart';
 import 'package:vocal/screens/edit_class_schedule.dart';
@@ -14,7 +14,7 @@ import 'package:vocal/utility/app_colors.dart';
 import 'package:vocal/utility/table_utils.dart';
 
 class UserProfileScreen extends StatefulWidget {
-  UserInfoSave user;
+  UserLocalSave user;
 
   UserProfileScreen({required this.user, super.key});
   @override
@@ -36,7 +36,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Map<DateTime, List<ClassSchedule>> _groupedEvents = {};
 
   SharedPref sharedPref = SharedPref();
-  UserInfoSave useDel = UserInfoSave();
+  UserLocalSave useDel = UserLocalSave();
 
   _groupEvents(List<ClassSchedule> events) {
     _groupedEvents = {};
@@ -269,6 +269,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     break;
                   }
                 }
+
                 classData.add(ClassSchedule(
                     name: cat['classList'][count]['name'],
                     phone: cat['name'],

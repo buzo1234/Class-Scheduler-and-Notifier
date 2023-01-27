@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vocal/models/user.dart';
+import 'package:vocal/models/user_shared_pref.dart';
 import 'package:vocal/screens/student_profile_screen.dart';
 import 'package:vocal/screens/user_profile_screen.dart';
 import 'package:vocal/services/shared_refs.dart';
@@ -48,7 +49,7 @@ class _VerificationScreenPageState extends State<VerificationScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   SharedPref sharedPref = SharedPref();
-  UserInfoSave userSave = UserInfoSave();
+  UserLocalSave userSave = UserLocalSave();
 
   @override
   void initState() {
@@ -143,14 +144,13 @@ class _VerificationScreenPageState extends State<VerificationScreen> {
             userSave.belong = false;
           });
 
-          print('Saved user $userSave');
 
-          sharedPref.save("user", userSave);
+          await sharedPref.save("user", userSave);
 
+          
           if (mounted) {
             if (widget.role == 'teacher') {
               Navigator.pop(context);
-
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
@@ -161,7 +161,6 @@ class _VerificationScreenPageState extends State<VerificationScreen> {
               );
             } else {
               Navigator.pop(context);
-
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
