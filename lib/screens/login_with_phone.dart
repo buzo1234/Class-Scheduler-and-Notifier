@@ -269,7 +269,7 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
                 context: context,
                 builder: (context) {
                   return const AlertDialog(
-                      content: Text("Number Does not Exists! Please Regsiter"));
+                      content: Text("Number Does not Exists! Please Regsiter", textAlign: TextAlign.center,));
                 })
           }
         else

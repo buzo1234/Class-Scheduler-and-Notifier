@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:vocal/services/firebase_crud.dart';
 import 'package:vocal/services/user_crud.dart';
 import 'package:vocal/utility/app_colors.dart';
+import 'package:vocal/utility/utility.dart';
 
 class AddEntries extends StatefulWidget {
   DateTime date;
@@ -23,6 +24,7 @@ class AddEntries extends StatefulWidget {
 }
 
 class _AddEntriesState extends State<AddEntries> {
+  bool isLoading = false;
   TextEditingController timeinput = TextEditingController();
   final Stream<QuerySnapshot> collectionReference = UserCrud.readClassUsers();
 
@@ -117,41 +119,61 @@ class _AddEntriesState extends State<AddEntries> {
               ),
               Expanded(
                 flex: 4,
-                child: Container(
+                child: Align(
                   alignment: Alignment.center,
-                  child: DropdownButton(
-                    style: const TextStyle(fontSize: 18.0, color: Colors.black),
-                    isDense: false,
-                    value: initialValue,
-                    hint: const Text('Select Name'),
-                    underline: Container(),
-                    icon: const Icon(Icons.keyboard_arrow_down),
-                    items: doc.map((DocumentSnapshot docSnap) {
-                      Map<String, dynamic> d =
-                          docSnap.data() as Map<String, dynamic>;
+                  child: Container(
+                    width: 130.0,
+                    alignment: Alignment.center,
+                    child: DropdownButton(
+                      style: const TextStyle(
+                          fontSize: 18.0,
+                          color: Colors.black,
+                          overflow: TextOverflow.ellipsis),
+                      isDense: false,
+                      isExpanded: true,
+                      value: initialValue,
+                      hint: const Text('Select Name'),
+                      underline: Container(),
+                      icon: const Icon(Icons.keyboard_arrow_down),
+                      items: doc.map((DocumentSnapshot docSnap) {
+                        Map<String, dynamic> d =
+                            docSnap.data() as Map<String, dynamic>;
 
-                      return DropdownMenuItem<String>(
-                        value: d['phone'] + '%%' + d['name'],
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                d['name'],
-                                style: const TextStyle(fontSize: 18),
-                              ),
-                              Text(d['phone'],
-                                  style: const TextStyle(fontSize: 14))
-                            ]),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      List phoneAndName = newValue!.split('%%');
-                      setState(() {
-                        defVal[index] = newValue;
-                        itemList[index].name = phoneAndName[1];
-                        itemList[index].id = phoneAndName[0];
-                      });
-                    },
+                        return DropdownMenuItem<String>(
+                          value: d['phone'] + '%%' + d['name'],
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: SizedBox(
+                                        width: 130.0,
+                                        child: Text(
+                                          d['name'],
+                                          style: const TextStyle(fontSize: 18),
+                                          //softWrap: false,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                                Text(d['phone'],
+                                    style: const TextStyle(fontSize: 14))
+                              ]),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        List phoneAndName = newValue!.split('%%');
+                        setState(() {
+                          defVal[index] = newValue;
+                          itemList[index].name = phoneAndName[1];
+                          itemList[index].id = phoneAndName[0];
+                        });
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -254,9 +276,10 @@ class _AddEntriesState extends State<AddEntries> {
         iconTheme: const IconThemeData(
           color: Colors.blue,
         ),
+        centerTitle: true,
         backgroundColor: AppColors.whiteColor,
         automaticallyImplyLeading: true,
-        actions: [
+        /* actions: [
           IconButton(
               onPressed: () async {
                 List itemMap = [];
@@ -292,7 +315,7 @@ class _AddEntriesState extends State<AddEntries> {
                 }
               },
               icon: const Icon(Icons.save))
-        ],
+        ], */
         title: Text(
           DateFormat('dd-MM-yyyy').format(widget.date).toString(),
           style: const TextStyle(color: Colors.black),
@@ -306,6 +329,7 @@ class _AddEntriesState extends State<AddEntries> {
             return Container();
           } else {
             return ListView.builder(
+              padding: const EdgeInsets.only(bottom: 68.0),
               shrinkWrap: true,
               itemCount: itemList.length + 1,
               itemBuilder: (context, index) {
@@ -364,6 +388,105 @@ class _AddEntriesState extends State<AddEntries> {
           }
         }),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          bool isConnected = await Utility.checkInternet();
+
+          if (isConnected) {
+            setState(() {
+              isLoading = true;
+            });
+            List itemMap = [];
+            List classScheduleList = [];
+
+            for (var i = 0; i < itemList.length; i++) {
+              itemMap.add(itemList[i].toMap());
+              ClassSchedule clasSchedule =
+                  ClassSchedule(itemList[i].id, itemMap);
+              classScheduleList.add(clasSchedule.toMap()); //{phone, start, end}
+              itemMap = [];
+            }
+
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                      title: const Text('Save'),
+                      content: const Text(
+                          'Are you sure you want to save this schedule and notify students?'),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              setState(() {
+                                isLoading = false;
+                              });
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('cancel')),
+                        TextButton(
+                            onPressed: () async {
+                              var response = await FirebaseCrud.addClasses(
+                                  date: widget.date.toString(),
+                                  entries: classScheduleList);
+                              Navigator.pop(context);
+                              if (response.code != 200) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      content: Text(
+                                        response.message.toString(),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    );
+                                  },
+                                );
+                              } else {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                          content: Text(
+                                        response.message.toString(),
+                                        textAlign: TextAlign.center,
+                                      ));
+                                    });
+                              }
+                              setState(() {
+                                isLoading = false;
+                              });
+                            },
+                            child: const Text('continue')),
+                      ],
+                    ));
+          } else {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return const AlertDialog(
+                      content: Text(
+                    'Connectivity Issues!',
+                    textAlign: TextAlign.center,
+                  ));
+                });
+          }
+        },
+        label: isLoading
+            ? const SizedBox(
+                height: 30.0,
+                width: 30.0,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              )
+            : const Text(
+                'Save',
+                style: TextStyle(fontSize: 18.0),
+              ),
+        icon: const Icon(
+          Icons.save,
+          size: 30.0,
+        ),
+      ),
     );
   }
 }
@@ -397,7 +520,6 @@ class ClassSchedule {
     return {
       "name": phone,
       "classList": clasList,
-      
     };
   }
 }

@@ -161,8 +161,14 @@ class _CreateScheduleState extends State<CreateSchedule> {
             ),
           );
         },
-        label: const Text('Continue'),
-        icon: const Icon(Icons.arrow_circle_right),
+        label: const Text(
+          'Continue',
+          style: TextStyle(fontSize: 18.0),
+        ),
+        icon: const Icon(
+          Icons.arrow_circle_right,
+          size: 30.0,
+        ),
       ),
     );
   }

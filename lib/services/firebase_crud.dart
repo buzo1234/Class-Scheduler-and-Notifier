@@ -20,10 +20,12 @@ class FirebaseCrud {
 
     Map<String, dynamic> data = <String, dynamic>{
       "date": date,
-      "Entries": entries,
+      "Entries": FieldValue.arrayUnion(entries),
     };
 
-    var result = await documentReferencer.set(data).whenComplete(() {
+    var result = await documentReferencer
+        .set(data, SetOptions(merge: true))
+        .whenComplete(() {
       print("ent 2");
       response.code = 200;
       response.message = "Sucessfully added to the database";

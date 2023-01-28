@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:vocal/models/day_entry.dart';
-import 'package:vocal/models/user.dart';
 import 'package:vocal/models/user_shared_pref.dart';
 import 'package:vocal/screens/login_with_phone.dart';
 import 'package:vocal/services/firebase_crud.dart';
@@ -261,7 +260,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                           shape: BoxShape.rectangle,
                           borderRadius: BorderRadius.all(Radius.circular(7.0))),
                       selectedDecoration: BoxDecoration(
-                          color: Color.fromARGB(255, 0, 90, 122),
+                          color: Color.fromARGB(255, 195, 0, 255),
                           shape: BoxShape.rectangle,
                           borderRadius: BorderRadius.all(Radius.circular(7.0))),
                       // Use `CalendarStyle` to customize the UI

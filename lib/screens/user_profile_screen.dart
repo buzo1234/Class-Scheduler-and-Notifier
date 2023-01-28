@@ -134,11 +134,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       endDrawer: Drawer(
-        // Add a ListView to the drawer. This ensures the user can scroll
-        // through the options in the drawer if there isn't enough vertical
-        // space to fit everything.
         child: ListView(
-          // Important: Remove any padding from the ListView.
           padding: EdgeInsets.zero,
           children: [
             UserAccountsDrawerHeader(
@@ -322,7 +318,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           shape: BoxShape.rectangle,
                           borderRadius: BorderRadius.all(Radius.circular(7.0))),
                       selectedDecoration: BoxDecoration(
-                          color: Color.fromARGB(255, 0, 90, 122),
+                          color: Color.fromARGB(255, 195, 0, 255),
                           shape: BoxShape.rectangle,
                           borderRadius: BorderRadius.all(Radius.circular(7.0))),
                       // Use `CalendarStyle` to customize the UI

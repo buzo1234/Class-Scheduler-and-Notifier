@@ -319,8 +319,10 @@ class _RegisterWithPhoneState extends State<RegisterWithPhone> {
                 context: context,
                 builder: (context) {
                   return const AlertDialog(
-                      content:
-                          Text("Number Already Exists! Please LogIn instead"));
+                      content: Text(
+                    "Number Already Exists! Please LogIn instead",
+                    textAlign: TextAlign.center,
+                  ));
                 })
           }
         else

@@ -20,12 +20,58 @@ class EditSchedule extends StatefulWidget {
 class _EditScheduleState extends State<EditSchedule> {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
+  TextEditingController startInput = TextEditingController();
+  TextEditingController endInput = TextEditingController();
+  String? classTime;
+  String? startTime;
+  String? endTime;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    startTime = widget.userSchedule?.start;
+    endTime = widget.userSchedule?.end;
+    startInput.text = TimeString(widget.userSchedule?.start);
+    endInput.text = TimeString(widget.userSchedule?.end);
+    classTime = TimeDifference(startTime, endTime);
+  }
+
+  String TimeDifference(String? start, String? end) {
+    String? newStartTime = start?.substring(10, 15);
+    String? newEndTime = end?.substring(10, 15);
+    DateTime dtStart = DateFormat('hh:mm').parse(newStartTime!);
+    DateTime dtEnd = DateFormat('hh:mm').parse(newEndTime!);
+
+    if (dtEnd.hour < dtStart.hour) {
+      return "Please Select Correct End Time";
+    }
+
+    if (dtEnd.hour == dtStart.hour && dtEnd.minute < dtStart.minute) {
+      return "Please Select Correct End Time";
+    }
+    TimeOfDay timeDiff = TimeOfDay.fromDateTime(
+        dtEnd.subtract(Duration(hours: dtStart.hour, minutes: dtStart.minute)));
+
+    return TimeFormatter(timeDiff);
+  }
+
+  String TimeFormatter(TimeOfDay? time) {
+    return "${time?.hour} hour and ${time?.minute} minutes";
+  }
+
   String TimeString(String? time) {
     String? newTime = time?.substring(10, 15);
     DateTime timeNew = DateFormat('hh:mm').parse(newTime!);
     String formattedTime = DateFormat('hh:mm a').format(timeNew);
 
     return formattedTime;
+  }
+
+  TimeOfDay TimeStringToClass(String? time) {
+    String? newTime = time?.substring(10, 15);
+    DateTime timeNew = DateFormat('hh:mm').parse(newTime!);
+    return TimeOfDay.fromDateTime(timeNew);
   }
 
   void sendPushMessage(String token, String body, String title) async {
@@ -76,60 +122,213 @@ class _EditScheduleState extends State<EditSchedule> {
         elevation: 0.0,
       ),
       body: Container(
+        padding: const EdgeInsets.only(top: 8.0),
         margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 11.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.userSchedule?.name ?? '',
-              style: const TextStyle(fontSize: 30.0),
-            ),
             const SizedBox(
-              height: 10.0,
+              height: 18,
             ),
-            Text(
-              widget.userSchedule?.phone ?? '',
-              style: const TextStyle(fontSize: 20.0),
+            DefaultTextStyle(
+              style: TextStyle(color: Colors.grey[700]),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.person),
+                      const SizedBox(
+                        width: 10.0,
+                      ),
+                      SizedBox(
+                        width: 130.0,
+                        child: Text(
+                          widget.userSchedule?.name ?? '',
+                          style: const TextStyle(fontSize: 18.0),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      )
+                    ],
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.phone),
+                      const SizedBox(
+                        width: 10.0,
+                      ),
+                      Text(
+                        widget.userSchedule?.phone ?? '',
+                        style: const TextStyle(fontSize: 18.0),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
             const SizedBox(
               height: 30.0,
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
+            Container(
+              height: 1.0,
+              color: Colors.grey[350],
+            ),
+            const SizedBox(
+              height: 30.0,
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Start',
-                      style: TextStyle(
-                          fontSize: 20.0, fontWeight: FontWeight.bold),
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          alignment: const Alignment(0.3, 0.0),
+                          child: const Icon(Icons.edit),
+                        ),
+                        const Text(
+                          'Start',
+                          style: TextStyle(
+                            fontSize: 18.0,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 10.0),
-                    Text(
-                      TimeString(widget.userSchedule?.start),
-                      style: const TextStyle(fontSize: 30.0),
+                    InkWell(
+                      hoverColor: Colors.blue,
+                      onTap: () {},
+                      splashColor: Colors.blue,
+                      child: Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.blue)),
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.all(2.0),
+                        child: TextFormField(
+                          textAlign: TextAlign.center,
+                          readOnly: true,
+                          controller: startInput,
+                          style: const TextStyle(fontSize: 30.0),
+                          decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              labelStyle: TextStyle(color: Colors.black),
+                              helperStyle: TextStyle(color: Colors.black)),
+                          onTap: () async {
+                            TimeOfDay? pickedTime = await showTimePicker(
+                              initialTime: TimeStringToClass(startTime),
+                              context: context,
+                            );
+
+                            if (pickedTime != null) {
+                              DateTime parsedTime = DateFormat.jm()
+                                  .parse(pickedTime.format(context).toString());
+
+                              String formattedTime =
+                                  DateFormat('hh:mm a').format(parsedTime);
+
+                              setState(() {
+                                startTime = pickedTime.toString();
+                                startInput.text = formattedTime;
+                                classTime = TimeDifference(startTime, endTime);
+                              });
+                            } else {}
+                          },
+                        ),
+                      ),
                     )
                   ],
                 ),
-                const Icon(Icons.arrow_right_alt_outlined),
+                const SizedBox(
+                  height: 30.0,
+                ),
+                const Icon(Icons.arrow_downward_sharp),
+                const SizedBox(
+                  height: 30.0,
+                ),
                 Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'End',
-                      style: TextStyle(
-                          fontSize: 20.0, fontWeight: FontWeight.bold),
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          alignment: const Alignment(0.3, 0.0),
+                          child: const Icon(Icons.edit),
+                        ),
+                        const Text(
+                          'End',
+                          style: TextStyle(
+                            fontSize: 18.0,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 10.0),
-                    Text(
-                      TimeString(widget.userSchedule?.end),
-                      style: const TextStyle(fontSize: 30.0),
+                    InkWell(
+                      hoverColor: Colors.blue,
+                      onTap: () {},
+                      splashColor: Colors.blue,
+                      child: Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.blue)),
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.all(2.0),
+                        child: TextFormField(
+                          textAlign: TextAlign.center,
+                          readOnly: true,
+                          controller: endInput,
+                          style: const TextStyle(fontSize: 30.0),
+                          decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              labelStyle: TextStyle(color: Colors.black),
+                              helperStyle: TextStyle(color: Colors.black)),
+                          onTap: () async {
+                            TimeOfDay? pickedTime = await showTimePicker(
+                              initialTime: TimeStringToClass(endTime),
+                              context: context,
+                            );
+
+                            if (pickedTime != null) {
+                              DateTime parsedTime = DateFormat.jm()
+                                  .parse(pickedTime.format(context).toString());
+
+                              String formattedTime =
+                                  DateFormat('hh:mm a').format(parsedTime);
+
+                              setState(() {
+                                endTime = pickedTime.toString();
+                                endInput.text = formattedTime;
+                                classTime = TimeDifference(startTime, endTime);
+                              });
+                            } else {}
+                          },
+                        ),
+                      ),
                     )
                   ],
                 ),
               ],
             ),
+            const SizedBox(
+              height: 40.0,
+            ),
+            Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Class time will be : '),
+                  Text(
+                    classTime ?? '',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  )
+                ]),
             Expanded(
               child: Align(
                 alignment: FractionalOffset.bottomCenter,
@@ -137,19 +336,40 @@ class _EditScheduleState extends State<EditSchedule> {
                   children: [
                     Expanded(
                         flex: 1,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(
-                              vertical: 10.0, horizontal: 3.0),
-                          height: 60.0,
-                          decoration: const BoxDecoration(
-                              color: Colors.red,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0))),
-                          child: const Center(
-                            child: Text(
-                              'Cancel Class',
-                              style: TextStyle(
-                                  color: Colors.white, fontSize: 19.0),
+                        child: GestureDetector(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                                vertical: 10.0, horizontal: 3.0),
+                            height: 60.0,
+                            decoration: BoxDecoration(
+                                color: Colors.transparent,
+                                border:
+                                    Border.all(color: Colors.red, width: 1.0),
+                                borderRadius: const BorderRadius.all(
+                                    Radius.circular(10.0))),
+                            child: InkWell(
+                              onTap: () {},
+                              splashColor: Colors.red,
+                              child: Center(
+                                child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: const [
+                                      Icon(
+                                        Icons.delete,
+                                        color: Colors.red,
+                                      ),
+                                      SizedBox(
+                                        width: 10.0,
+                                      ),
+                                      Text(
+                                        'Delete',
+                                        style: TextStyle(
+                                            color: Colors.red, fontSize: 19.0),
+                                      ),
+                                    ]),
+                              ),
                             ),
                           ),
                         )),
@@ -161,10 +381,11 @@ class _EditScheduleState extends State<EditSchedule> {
                                 vertical: 10.0, horizontal: 3.0),
                             height: 60.0,
                             decoration: const BoxDecoration(
-                                color: Color.fromARGB(179, 33, 149, 243),
+                                color: Color.fromARGB(229, 33, 149, 243),
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(10.0))),
                             child: InkWell(
+                              splashColor: Colors.black,
                               onTap: () async {
                                 String tokenOfStudent =
                                     await UserCrud.getUserToken(
@@ -172,16 +393,30 @@ class _EditScheduleState extends State<EditSchedule> {
                                 print('Token of Student is : $tokenOfStudent');
                                 sendPushMessage(
                                     tokenOfStudent,
-                                    'New start time at ${TimeString(widget.userSchedule?.start)}',
+                                    'New class timings from ${TimeString(startTime)} to ${TimeString(endTime)}',
                                     'Class Rescheduled!');
                                 print('executed');
                               },
-                              child: const Center(
-                                child: Text(
-                                  'Save Changes',
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 19.0),
-                                ),
+                              child: Center(
+                                child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: const [
+                                      Icon(
+                                        Icons.save,
+                                        color: Colors.white,
+                                      ),
+                                      SizedBox(
+                                        width: 10.0,
+                                      ),
+                                      Text(
+                                        'Save',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 19.0),
+                                      ),
+                                    ]),
                               ),
                             ),
                           ),
@@ -189,7 +424,7 @@ class _EditScheduleState extends State<EditSchedule> {
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
