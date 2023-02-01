@@ -5,7 +5,8 @@ class ClassSchedule {
   DateTime? date;
   String? phone;
   String? token;
+  Map<String, dynamic>? entry;
 
   ClassSchedule(
-      {this.name, this.start, this.end, this.date, this.phone, this.token});
+      {this.name, this.start, this.end, this.date, this.phone, this.token, this.entry});
 }

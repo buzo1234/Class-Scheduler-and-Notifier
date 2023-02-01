@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -5,6 +7,7 @@ import 'package:vocal/services/firebase_crud.dart';
 import 'package:vocal/services/user_crud.dart';
 import 'package:vocal/utility/app_colors.dart';
 import 'package:vocal/utility/utility.dart';
+import 'package:http/http.dart' as http;
 
 class AddEntries extends StatefulWidget {
   DateTime date;
@@ -249,6 +252,50 @@ class _AddEntriesState extends State<AddEntries> {
     return endTimeOfDay;
   }
 
+  Future<bool> sendPushMessage(String token, String body, String title) async {
+    try {
+      print('Token is  $token');
+      if (token == '') return false;
+      await http.post(Uri.parse('https://fcm.googleapis.com/fcm/send'),
+          headers: <String, String>{
+            'Content-Type': 'application/json',
+            'Authorization':
+                'key=AAAA0SP4R1I:APA91bGwIGSp9w4p5kbTAZgrM0mXyKGMU59iz19bMxegq51izl4DtlKF3WIl-BzDY3-ZSKczRCgK2o-c_rJBlZP3sgRfr0V5WE0OkLpxJ88J3umrZAjCU3Fh44TgnhSamoL1T_dGl3i8',
+          },
+          body: jsonEncode(<String, dynamic>{
+            'priority': 'high',
+            'data': <String, dynamic>{
+              'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+              'status': 'done',
+              'body': body,
+              'title': title,
+            },
+            'android': {
+              'priority': 'high',
+            },
+            'notification': <String, dynamic>{
+              "title": title,
+              "body": body,
+              "android_channel_id": "channel_id"
+            },
+            "to": token
+          }));
+
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+  Future<void> sendNotifications(List classes) async {
+    print('heree');
+    for (var classnow in classes) {
+      print('class now is ${classnow['classList']}');
+    }
+    //String tokenOfStudent = await UserCrud.getUserToken();
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -279,43 +326,6 @@ class _AddEntriesState extends State<AddEntries> {
         centerTitle: true,
         backgroundColor: AppColors.whiteColor,
         automaticallyImplyLeading: true,
-        /* actions: [
-          IconButton(
-              onPressed: () async {
-                List itemMap = [];
-                List classScheduleList = [];
-
-                for (var i = 0; i < itemList.length; i++) {
-                  itemMap.add(itemList[i].toMap());
-                  ClassSchedule clasSchedule =
-                      ClassSchedule(itemList[i].id, itemMap);
-                  classScheduleList
-                      .add(clasSchedule.toMap()); //{phone, start, end}
-                  itemMap = [];
-                }
-                var response = await FirebaseCrud.addClasses(
-                    date: widget.date.toString(), entries: classScheduleList);
-
-                if (response.code != 200) {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        content: Text(response.message.toString()),
-                      );
-                    },
-                  );
-                } else {
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                            content: Text(response.message.toString()));
-                      });
-                }
-              },
-              icon: const Icon(Icons.save))
-        ], */
         title: Text(
           DateFormat('dd-MM-yyyy').format(widget.date).toString(),
           style: const TextStyle(color: Colors.black),
@@ -427,6 +437,7 @@ class _AddEntriesState extends State<AddEntries> {
                               var response = await FirebaseCrud.addClasses(
                                   date: widget.date.toString(),
                                   entries: classScheduleList);
+                              await sendNotifications(classScheduleList);
                               Navigator.pop(context);
                               if (response.code != 200) {
                                 showDialog(

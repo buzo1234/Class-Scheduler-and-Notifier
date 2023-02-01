@@ -43,6 +43,7 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
   description: 'This is the notification description', 'channel_id', // id
   'dbclass', // title
 // description
+
   importance: Importance.high,
 );
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -111,7 +112,10 @@ class _MyAppState extends State<MyApp> {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
+
       if (notification != null && android != null) {
+        var bigTextStyleInformation =
+            BigTextStyleInformation(notification.body as String);
         flutterLocalNotificationsPlugin.show(
             notification.hashCode,
             notification.title,
@@ -120,7 +124,7 @@ class _MyAppState extends State<MyApp> {
               android: AndroidNotificationDetails(
                 channel.id,
                 channel.name,
-
+                styleInformation: bigTextStyleInformation,
                 channelDescription: channel.description,
                 color: Colors.blue,
                 // TODO add a proper drawable resource to android, for now using

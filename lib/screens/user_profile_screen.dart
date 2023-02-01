@@ -256,6 +256,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               DateTime dID =
                   DateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS").parse(dateID);
               for (var cat in snapshot.data!.docs[i]['Entries']) {
+                print('cat is ${cat.runtimeType}');
                 var count = 0;
 
                 for (var i = 0; i < cat['classList'].length; i++) {
@@ -267,6 +268,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 }
 
                 classData.add(ClassSchedule(
+                    entry: cat,
                     name: cat['classList'][count]['name'],
                     phone: cat['name'],
                     date: dID,

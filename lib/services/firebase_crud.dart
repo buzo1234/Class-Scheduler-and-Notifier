@@ -73,15 +73,18 @@ class FirebaseCrud {
   }
 
   //delete
-  static Future<Response> deleteEmployee({
-    required String docId,
+  static Future<Response> deleteClass({
+    required String? docId,
+    required Map<String, dynamic>? entry,
   }) async {
     Response response = Response();
     DocumentReference documentReferencer = _Collection.doc(docId);
-
-    await documentReferencer.delete().whenComplete(() {
+    var data = {};
+    await documentReferencer.update({
+      "Entries": FieldValue.arrayRemove([entry])
+    }).whenComplete(() {
       response.code = 200;
-      response.message = "Sucessfully Deleted Employee";
+      response.message = "Sucessfully Deleted Class";
     }).catchError((e) {
       response.code = 500;
       response.message = e;

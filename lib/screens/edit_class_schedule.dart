@@ -4,9 +4,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:vocal/models/day_entry.dart';
+import 'package:vocal/services/firebase_crud.dart';
 import 'package:vocal/services/user_crud.dart';
 import 'package:vocal/utility/app_colors.dart';
 import 'package:http/http.dart' as http;
+import 'package:vocal/utility/utility.dart';
 
 class EditSchedule extends StatefulWidget {
   ClassSchedule? userSchedule;
@@ -74,9 +76,10 @@ class _EditScheduleState extends State<EditSchedule> {
     return TimeOfDay.fromDateTime(timeNew);
   }
 
-  void sendPushMessage(String token, String body, String title) async {
-    print('Token : $token and body is : $body');
+  Future<bool> sendPushMessage(String token, String body, String title) async {
     try {
+      print('Token is  $token');
+      if (token == '') return false;
       await http.post(Uri.parse('https://fcm.googleapis.com/fcm/send'),
           headers: <String, String>{
             'Content-Type': 'application/json',
@@ -101,8 +104,11 @@ class _EditScheduleState extends State<EditSchedule> {
             },
             "to": token
           }));
+
+      return true;
     } catch (e) {
       print(e);
+      return false;
     }
   }
 
@@ -348,7 +354,92 @@ class _EditScheduleState extends State<EditSchedule> {
                                 borderRadius: const BorderRadius.all(
                                     Radius.circular(10.0))),
                             child: InkWell(
-                              onTap: () {},
+                              onTap: () async {
+                                bool isConnected =
+                                    await Utility.checkInternet();
+
+                                if (isConnected) {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                            title: const Text('Delete Class?'),
+                                            content: Text(
+                                                'Are you sure you want to delete/cancel this class and notify ${widget.userSchedule?.name}?'),
+                                            actions: [
+                                              TextButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: const Text('cancel')),
+                                              TextButton(
+                                                  onPressed: () async {
+                                                    var response = FirebaseCrud
+                                                        .deleteClass(
+                                                            docId: DateFormat(
+                                                                    'dd-MM-yyyy')
+                                                                .format(widget
+                                                                        .userSchedule
+                                                                        ?.date
+                                                                    as DateTime),
+                                                            entry: widget
+                                                                .userSchedule
+                                                                ?.entry);
+                                                    String tokenOfStudent =
+                                                        await UserCrud
+                                                            .getUserToken(widget
+                                                                .userSchedule
+                                                                ?.phone);
+
+                                                    bool isSent =
+                                                        await sendPushMessage(
+                                                            tokenOfStudent,
+                                                            'Your class on ${DateFormat('dd-MM-yyyy').format(widget.userSchedule?.date as DateTime)} that was to start from ${TimeString(widget.userSchedule?.start)} is cancelled.',
+                                                            'Class Cancelled!');
+                                                    Navigator.pop(context);
+                                                    if (isSent) {
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return const AlertDialog(
+                                                            content: Text(
+                                                              "Student is Notified!",
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                            ),
+                                                          );
+                                                        },
+                                                      );
+                                                    } else {
+                                                      showDialog(
+                                                          context: context,
+                                                          builder: (context) {
+                                                            return const AlertDialog(
+                                                                content: Text(
+                                                              "Some Error Occured",
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                            ));
+                                                          });
+                                                    }
+                                                  },
+                                                  child:
+                                                      const Text('continue')),
+                                            ],
+                                          ));
+                                } else {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return const AlertDialog(
+                                            content: Text(
+                                          'Connectivity Issues!',
+                                          textAlign: TextAlign.center,
+                                        ));
+                                      });
+                                }
+                              },
                               splashColor: Colors.red,
                               child: Center(
                                 child: Row(
@@ -387,15 +478,79 @@ class _EditScheduleState extends State<EditSchedule> {
                             child: InkWell(
                               splashColor: Colors.black,
                               onTap: () async {
-                                String tokenOfStudent =
-                                    await UserCrud.getUserToken(
-                                        widget.userSchedule?.phone);
-                                print('Token of Student is : $tokenOfStudent');
-                                sendPushMessage(
-                                    tokenOfStudent,
-                                    'New class timings from ${TimeString(startTime)} to ${TimeString(endTime)}',
-                                    'Class Rescheduled!');
-                                print('executed');
+                                bool isConnected =
+                                    await Utility.checkInternet();
+
+                                if (isConnected) {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                            title: const Text('Save Edit?'),
+                                            content: Text(
+                                                'Are you sure you want to save this time and notify ${widget.userSchedule?.name}?'),
+                                            actions: [
+                                              TextButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: const Text('cancel')),
+                                              TextButton(
+                                                  onPressed: () async {
+                                                    String tokenOfStudent =
+                                                        await UserCrud
+                                                            .getUserToken(widget
+                                                                .userSchedule
+                                                                ?.phone);
+
+                                                    bool isSent =
+                                                        await sendPushMessage(
+                                                            tokenOfStudent,
+                                                            'New class timings from ${TimeString(startTime)} to ${TimeString(endTime)}',
+                                                            'Class Rescheduled!');
+                                                    Navigator.pop(context);
+                                                    if (isSent) {
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return const AlertDialog(
+                                                            content: Text(
+                                                              "Student is Notified!",
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                            ),
+                                                          );
+                                                        },
+                                                      );
+                                                    } else {
+                                                      showDialog(
+                                                          context: context,
+                                                          builder: (context) {
+                                                            return const AlertDialog(
+                                                                content: Text(
+                                                              "Some Error Occured",
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                            ));
+                                                          });
+                                                    }
+                                                  },
+                                                  child:
+                                                      const Text('continue')),
+                                            ],
+                                          ));
+                                } else {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return const AlertDialog(
+                                            content: Text(
+                                          'Connectivity Issues!',
+                                          textAlign: TextAlign.center,
+                                        ));
+                                      });
+                                }
                               },
                               child: Center(
                                 child: Row(
