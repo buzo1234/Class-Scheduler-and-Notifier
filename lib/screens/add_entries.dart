@@ -291,7 +291,8 @@ class _AddEntriesState extends State<AddEntries> {
   Future<void> sendNotifications(List classes) async {
     print('heree');
     for (var classnow in classes) {
-      print('class now is ${classnow['classList']}');
+      print(
+          "class now is ${classnow['classList'][classnow['classList'].length - 1]['name']}");
     }
     //String tokenOfStudent = await UserCrud.getUserToken();
   }
