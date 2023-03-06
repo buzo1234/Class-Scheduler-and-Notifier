@@ -23,6 +23,7 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
   MediaQueryData mediaQuerydata;
   bool isLoading = false;
   String? mtoken = " ";
+  bool loadingLogin = false;
 
   _LoginWithPhoneState()
       : size = const Size(20, 20),
@@ -41,6 +42,7 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
   @override
   void initState() {
     super.initState();
+    loadingLogin = false;
     getToken();
     textEditingController = TextEditingController();
   }
@@ -88,9 +90,9 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
                     ),
                     Utility.loginButtonsWidget(
                       "",
-                      "Continue",
+                      loadingLogin ? "Loading..." : "Continue",
                       () {
-                        continueClick();
+                        loadingLogin ? null : continueClick();
                       },
                       AppColors.blackColor,
                       AppColors.blackColor,
@@ -258,6 +260,10 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
   }
 
   continueClick() {
+    if (textEditingController.text.length != 10) return;
+    setState(() {
+      loadingLogin = true;
+    });
     Future<DocumentSnapshot> resp =
         UserCrud.readUser(phoneNum: textEditingController.text);
 
@@ -269,8 +275,14 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
                 context: context,
                 builder: (context) {
                   return const AlertDialog(
-                      content: Text("Number Does not Exists! Please Regsiter", textAlign: TextAlign.center,));
-                })
+                      content: Text(
+                    "Number Does not Exists! Please Regsiter",
+                    textAlign: TextAlign.center,
+                  ));
+                }),
+            setState(() {
+              loadingLogin = false;
+            })
           }
         else
           {moveToScreen(doc.data())}

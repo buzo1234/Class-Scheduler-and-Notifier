@@ -23,6 +23,7 @@ class _RegisterWithPhoneState extends State<RegisterWithPhone> {
   Size size;
   MediaQueryData mediaQuerydata;
   bool isLoading = false;
+  bool loadingLogin = false;
 
   _RegisterWithPhoneState()
       : size = const Size(20, 20),
@@ -44,6 +45,8 @@ class _RegisterWithPhoneState extends State<RegisterWithPhone> {
   @override
   void initState() {
     super.initState();
+    loadingLogin = false;
+
     textEditingController = TextEditingController();
     nameEditingController = TextEditingController();
     getToken();
@@ -92,9 +95,9 @@ class _RegisterWithPhoneState extends State<RegisterWithPhone> {
                     ),
                     Utility.loginButtonsWidget(
                       "",
-                      "Continue",
+                      loadingLogin ? "Loading..." : "Continue",
                       () {
-                        continueClick();
+                        loadingLogin ? null : continueClick();
                       },
                       AppColors.blackColor,
                       AppColors.blackColor,
@@ -308,6 +311,10 @@ class _RegisterWithPhoneState extends State<RegisterWithPhone> {
   }
 
   continueClick() async {
+    if (textEditingController.text.length != 10) return;
+    setState(() {
+      loadingLogin = true;
+    });
     Future<DocumentSnapshot> resp =
         UserCrud.readUser(phoneNum: textEditingController.text);
 
@@ -323,10 +330,16 @@ class _RegisterWithPhoneState extends State<RegisterWithPhone> {
                     "Number Already Exists! Please LogIn instead",
                     textAlign: TextAlign.center,
                   ));
-                })
+                }),
+            setState(() {
+              loadingLogin = false;
+            })
           }
         else
-          {addUserToDB()}
+          {
+            
+            addUserToDB()
+          }
       },
     );
   }
