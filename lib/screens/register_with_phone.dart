@@ -71,8 +71,10 @@ class _RegisterWithPhoneState extends State<RegisterWithPhone> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     const Spacer(),
-                    const FlutterLogo(
-                      size: 150,
+                    Image.asset(
+                      'assets/icon/icon.jfif',
+                      height: 150,
+                      width: 150,
                     ),
                     const Spacer(),
                     Container(
@@ -336,10 +338,7 @@ class _RegisterWithPhoneState extends State<RegisterWithPhone> {
             })
           }
         else
-          {
-            
-            addUserToDB()
-          }
+          {addUserToDB()}
       },
     );
   }
