@@ -268,6 +268,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 }
 
                 classData.add(ClassSchedule(
+                    token: cat['classList'][count]['token'],
                     entry: cat,
                     name: cat['classList'][count]['name'],
                     phone: cat['name'],

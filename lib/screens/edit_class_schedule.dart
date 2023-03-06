@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:vocal/models/day_entry.dart';
 import 'package:vocal/services/firebase_crud.dart';
-import 'package:vocal/services/user_crud.dart';
 import 'package:vocal/utility/app_colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:vocal/utility/utility.dart';
@@ -76,7 +75,7 @@ class _EditScheduleState extends State<EditSchedule> {
     return TimeOfDay.fromDateTime(timeNew);
   }
 
-  Future<bool> sendPushMessage(String token, String body, String title) async {
+  Future<bool> sendPushMessage(String? token, String body, String title) async {
     try {
       print('Token is  $token');
       if (token == '') return false;
@@ -114,6 +113,7 @@ class _EditScheduleState extends State<EditSchedule> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.userSchedule?.entry);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.whiteColor,
@@ -373,7 +373,7 @@ class _EditScheduleState extends State<EditSchedule> {
                                                   child: const Text('cancel')),
                                               TextButton(
                                                   onPressed: () async {
-                                                    var response = FirebaseCrud
+                                                    var response = await FirebaseCrud
                                                         .deleteClass(
                                                             docId: DateFormat(
                                                                     'dd-MM-yyyy')
@@ -384,17 +384,17 @@ class _EditScheduleState extends State<EditSchedule> {
                                                             entry: widget
                                                                 .userSchedule
                                                                 ?.entry);
-                                                    String tokenOfStudent =
+                                                    /* String tokenOfStudent =
                                                         await UserCrud
                                                             .getUserToken(widget
                                                                 .userSchedule
-                                                                ?.phone);
+                                                                ?.phone); */
 
-                                                    bool isSent =
-                                                        await sendPushMessage(
-                                                            tokenOfStudent,
-                                                            'Your class on ${DateFormat('dd-MM-yyyy').format(widget.userSchedule?.date as DateTime)} that was to start from ${TimeString(widget.userSchedule?.start)} is cancelled.',
-                                                            'Class Cancelled!');
+                                                    bool isSent = await sendPushMessage(
+                                                        widget.userSchedule
+                                                            ?.token,
+                                                        'Your class on ${DateFormat('dd-MM-yyyy').format(widget.userSchedule?.date as DateTime)} that was to start from ${TimeString(widget.userSchedule?.start)} is cancelled.',
+                                                        'Class Cancelled! : ${DateFormat('dd-MM-yyyy').format(widget.userSchedule?.date as DateTime)}');
                                                     Navigator.pop(context);
                                                     if (isSent) {
                                                       showDialog(
@@ -496,17 +496,30 @@ class _EditScheduleState extends State<EditSchedule> {
                                                   child: const Text('cancel')),
                                               TextButton(
                                                   onPressed: () async {
-                                                    String tokenOfStudent =
+                                                    /*  String tokenOfStudent =
                                                         await UserCrud
                                                             .getUserToken(widget
                                                                 .userSchedule
-                                                                ?.phone);
+                                                                ?.phone); */
+                                                    var response = await FirebaseCrud
+                                                        .updateClass(
+                                                            docId: DateFormat(
+                                                                    'dd-MM-yyyy')
+                                                                .format(widget
+                                                                        .userSchedule
+                                                                        ?.date
+                                                                    as DateTime),
+                                                            entry: widget
+                                                                .userSchedule
+                                                                ?.entry,
+                                                            start: startTime,
+                                                            end: endTime);
 
-                                                    bool isSent =
-                                                        await sendPushMessage(
-                                                            tokenOfStudent,
-                                                            'New class timings from ${TimeString(startTime)} to ${TimeString(endTime)}',
-                                                            'Class Rescheduled!');
+                                                    bool isSent = await sendPushMessage(
+                                                        widget.userSchedule
+                                                            ?.token,
+                                                        'New class timings from ${TimeString(startTime)} to ${TimeString(endTime)}',
+                                                        'Class Rescheduled! : ${DateFormat('dd-MM-yyyy').format(widget.userSchedule?.date as DateTime)}');
                                                     Navigator.pop(context);
                                                     if (isSent) {
                                                       showDialog(

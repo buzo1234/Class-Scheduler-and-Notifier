@@ -46,24 +46,28 @@ class FirebaseCrud {
   }
 
 //update
-  static Future<Response> updateEmployee({
-    required String name,
-    required String position,
-    required String contactno,
-    required String docId,
+  static Future<Response> updateClass({
+    required String? docId,
+    required String? start,
+    required String? end,
+    required Map<String, dynamic>? entry,
   }) async {
     Response response = Response();
     DocumentReference documentReferencer = _Collection.doc(docId);
+    print("start $entry");
+    Map<String, dynamic>? data = entry;
+    data?['classList'][0]['start'] = start;
+    data?['classList'][0]['end'] = end;
 
-    Map<String, dynamic> data = <String, dynamic>{
-      "employee_name": name,
-      "position": position,
-      "contact_no": contactno
-    };
-
-    await documentReferencer.update(data).whenComplete(() {
-      response.code = 200;
-      response.message = "Sucessfully updated Employee";
+    await documentReferencer.update({
+      "Entries": FieldValue.arrayRemove([entry])
+    }).whenComplete(() async {
+      await documentReferencer.update({
+        "Entries": FieldValue.arrayUnion([data])
+      }).whenComplete(() {
+        response.code = 200;
+        response.message = "Sucessfully updated Class";
+      });
     }).catchError((e) {
       response.code = 500;
       response.message = e;
