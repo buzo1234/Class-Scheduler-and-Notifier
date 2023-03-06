@@ -41,6 +41,14 @@ class _AddEntriesState extends State<AddEntries> {
     return formattedTime;
   }
 
+  String TimeString(String? time) {
+    String? newTime = time?.substring(10, 15);
+    DateTime timeNew = DateFormat('hh:mm').parse(newTime!);
+    String formattedTime = DateFormat('hh:mm a').format(timeNew);
+
+    return formattedTime;
+  }
+
   Widget singleItemList(
       int index,
       TextEditingController? controller1,
@@ -143,7 +151,11 @@ class _AddEntriesState extends State<AddEntries> {
                             docSnap.data() as Map<String, dynamic>;
 
                         return DropdownMenuItem<String>(
-                          value: d['phone'] + '%%' + d['name'],
+                          value: d['phone'] +
+                              '%%' +
+                              d['name'] +
+                              '%%' +
+                              d['token'].last,
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -170,10 +182,12 @@ class _AddEntriesState extends State<AddEntries> {
                       }).toList(),
                       onChanged: (String? newValue) {
                         List phoneAndName = newValue!.split('%%');
+
                         setState(() {
                           defVal[index] = newValue;
                           itemList[index].name = phoneAndName[1];
                           itemList[index].id = phoneAndName[0];
+                          itemList[index].usrToken = phoneAndName[2];
                         });
                       },
                     ),
@@ -291,8 +305,10 @@ class _AddEntriesState extends State<AddEntries> {
   Future<void> sendNotifications(List classes) async {
     print('heree');
     for (var classnow in classes) {
-      print(
-          "class now is ${classnow['classList'][classnow['classList'].length - 1]['name']}");
+      await sendPushMessage(
+          classnow['classList'].last['token'],
+          "From : ${TimeString(classnow['classList'].last['start'])}, To : ${TimeString(classnow['classList'].last['end'])}",
+          "Class Scheduled : ${DateFormat('dd-MM-yyyy').format(widget.date).toString()}");
     }
     //String tokenOfStudent = await UserCrud.getUserToken();
   }
@@ -310,7 +326,7 @@ class _AddEntriesState extends State<AddEntries> {
     for (int i = 0; i < entries; i++) {
       TimeOfDay end = changeEndTime(start);
       defVal.add(null);
-      itemList.add(Item(start, end, null, '$i'));
+      itemList.add(Item(start, end, null, '$i', null));
 
       start = end;
     }
@@ -508,16 +524,18 @@ class Item {
   TimeOfDay end;
   String? name;
   String? id;
+  String? usrToken;
   String status = 'scheduled';
 
-  Item(this.start, this.end, this.name, this.id);
+  Item(this.start, this.end, this.name, this.id, this.usrToken);
 
   Map<String, dynamic> toMap() {
     return {
       "name": name,
       "start": start.toString(),
       "end": end.toString(),
-      "status": status
+      "status": status,
+      "token": usrToken,
     };
   }
 }
