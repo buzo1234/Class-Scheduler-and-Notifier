@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:vocal/models/user.dart';
 import 'package:vocal/models/user_shared_pref.dart';
 import 'package:vocal/screens/student_profile_screen.dart';
 import 'package:vocal/screens/user_profile_screen.dart';
@@ -144,10 +143,8 @@ class _VerificationScreenPageState extends State<VerificationScreen> {
             userSave.belong = false;
           });
 
-
           await sharedPref.save("user", userSave);
 
-          
           if (mounted) {
             if (widget.role == 'teacher') {
               Navigator.pop(context);
